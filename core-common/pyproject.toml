@@ -1,0 +1,16 @@
+[project]
+name = "core-common"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+  "httpx==0.27.*",
+  "pydantic==2.7.*",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.23,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "app"
+module-name = "core_common"
