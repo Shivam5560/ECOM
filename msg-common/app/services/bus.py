@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import Awaitable, Callable, Protocol
 
 from msg_common.envelope import EventEnvelope
@@ -22,11 +23,19 @@ class EventBus(Protocol):
         ...
 
 
+@dataclass(frozen=True, slots=True)
+class RetryPolicy:
+    max_attempts: int = 3
+    dlq_suffix: str = ".dlq"
+
+
 class InMemoryEventBus:
-    def __init__(self, *, source_service: str) -> None:
+    def __init__(self, *, source_service: str, retry_policy: RetryPolicy | None = None) -> None:
         self.source_service = source_service
+        self.retry_policy = retry_policy or RetryPolicy()
         self._handlers: dict[str, list[EventHandler]] = defaultdict(list)
         self.published: list[EventEnvelope] = []
+        self.dead_letters: list[EventEnvelope] = []
 
     def subscribe(self, event_type: str, handler: EventHandler) -> None:
         self._handlers[event_type].append(handler)
@@ -46,5 +55,11 @@ class InMemoryEventBus:
         )
         self.published.append(envelope)
         for handler in self._handlers[event_type]:
-            await handler(envelope)
+            for attempt in range(self.retry_policy.max_attempts):
+                try:
+                    await handler(envelope)
+                    break
+                except Exception:
+                    if attempt + 1 >= self.retry_policy.max_attempts:
+                        self.dead_letters.append(envelope)
         return envelope

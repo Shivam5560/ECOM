@@ -1,0 +1,17 @@
+[project]
+name = "product-service"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = ["core-common", "msg-common", "fastapi==0.115.*", "pydantic==2.7.*"]
+
+[tool.uv.sources]
+core-common = { workspace = true }
+msg-common = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.11.23,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "app"
+module-name = "product_service"

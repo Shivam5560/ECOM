@@ -12,6 +12,12 @@ members = [
   "msg-common",
   "auth-service",
   "user-service",
+  "product-service",
+  "order-service",
+  "payment-service",
+  "invoice-service",
+  "notification-service",
+  "workflow-service",
 ]
 
 [tool.uv.sources]

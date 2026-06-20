@@ -1,4 +1,16 @@
 CREATE DATABASE auth_db;
 CREATE DATABASE users_db;
+CREATE DATABASE products_db;
+CREATE DATABASE orders_db;
+CREATE DATABASE payments_db;
+CREATE DATABASE invoices_db;
+CREATE DATABASE notifications_db;
+CREATE DATABASE workflow_db;
 CREATE DATABASE auth_test_db;
 CREATE DATABASE users_test_db;
+CREATE DATABASE products_test_db;
+CREATE DATABASE orders_test_db;
+CREATE DATABASE payments_test_db;
+CREATE DATABASE invoices_test_db;
+CREATE DATABASE notifications_test_db;
+CREATE DATABASE workflow_test_db;
