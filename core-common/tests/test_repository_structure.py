@@ -13,7 +13,7 @@ class RepositoryStructureTests(unittest.TestCase):
         self.assertFalse((REPO_ROOT / "services" / "auth-service").exists())
         self.assertFalse((REPO_ROOT / "services" / "user-service").exists())
 
-    def test_app_directories_are_not_nested_under_package_name(self) -> None:
+    def test_app_directories_use_package_module_root(self) -> None:
         for package_dir, package_name in [
             ("core-common", "core_common"),
             ("msg-common", "msg_common"),
@@ -22,7 +22,7 @@ class RepositoryStructureTests(unittest.TestCase):
         ]:
             with self.subTest(package_dir=package_dir):
                 self.assertTrue((REPO_ROOT / package_dir / "app").is_dir())
-                self.assertFalse((REPO_ROOT / package_dir / "app" / package_name).exists())
+                self.assertTrue((REPO_ROOT / package_dir / "app" / package_name).is_dir())
 
     def test_public_imports_are_preserved(self) -> None:
         for module_name in [

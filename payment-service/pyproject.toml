@@ -1,7 +1,7 @@
 [project]
 name = "payment-service"
 version = "0.1.0"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = ["core-common", "msg-common", "fastapi==0.115.*", "pydantic==2.7.*"]
 
 [tool.uv.sources]

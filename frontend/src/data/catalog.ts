@@ -10,7 +10,7 @@ export const products: Product[] = [
     accent: "#0f6b57",
     image: "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=900&q=85",
     rating: 4.9,
-    inventory: "Ships today",
+    stock: 8,
   },
   {
     id: "linea-tote",
@@ -21,7 +21,7 @@ export const products: Product[] = [
     accent: "#a57b35",
     image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=900&q=85",
     rating: 4.8,
-    inventory: "Low stock",
+    stock: 5,
   },
   {
     id: "halo-lamp",
@@ -32,7 +32,7 @@ export const products: Product[] = [
     accent: "#173d36",
     image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=900&q=85",
     rating: 4.7,
-    inventory: "Ready",
+    stock: 11,
   },
   {
     id: "cove-diffuser",
@@ -43,7 +43,7 @@ export const products: Product[] = [
     accent: "#8b6f45",
     image: "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=900&q=85",
     rating: 4.8,
-    inventory: "New batch",
+    stock: 9,
   },
   {
     id: "tempo-watch",
@@ -54,7 +54,7 @@ export const products: Product[] = [
     accent: "#1f493f",
     image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=85",
     rating: 4.9,
-    inventory: "Ships Friday",
+    stock: 3,
   },
   {
     id: "arc-keyboard",
@@ -65,7 +65,7 @@ export const products: Product[] = [
     accent: "#222222",
     image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=900&q=85",
     rating: 4.6,
-    inventory: "Ready",
+    stock: 14,
   },
 ];
 

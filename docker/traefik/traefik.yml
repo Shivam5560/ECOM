@@ -1,0 +1,36 @@
+# Traefik Static Configuration
+# Traefik reads this once at startup.
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# --- Entry Points ---
+entryPoints:
+  web:
+    address: ":80"
+
+# --- API / Dashboard ---
+api:
+  dashboard: true
+  insecure: true   # dashboard available on :8080, no auth needed for local dev
+
+# --- Logging ---
+log:
+  level: INFO
+
+accessLog: {}
+
+# --- Providers ---
+providers:
+  # 1. Consul Catalog: Traefik watches Consul and auto-routes based on service tags
+  consulCatalog:
+    prefix: traefik          # tag prefix used to configure routes  e.g. traefik.enable=true
+    exposedByDefault: false  # only services that opt-in via tags are exposed
+    endpoint:
+      address: consul:8500   # consul container hostname on ecom_default network
+    refreshInterval: 5s      # how often to poll Consul for changes
+
+  # 2. Docker provider (disabled — we use Consul catalog, not Docker labels)
+  # docker:
+  #   exposedByDefault: false

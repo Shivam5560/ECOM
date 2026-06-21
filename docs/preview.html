@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ECOM — Street Editorial Revamp</title>
+<style>
+:root{
+  --paper:#f7f5ea;
+  --ink:#111111;
+  --acid:#d7ff38;
+  --sky:#bdeaff;
+  --pink:#ff5fa2;
+  --clay:#ede2d1;
+  --line:1.5px solid var(--ink);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:Inter, Arial, sans-serif;
+}
+a{text-decoration:none;color:inherit}
+.page{
+  width:min(1440px,100%);
+  margin:0 auto 80px;
+  border-left:var(--line);
+  border-right:var(--line);
+  background:var(--paper);
+}
+.ticker{
+  height:28px;
+  display:flex;
+  align-items:center;
+  overflow:hidden;
+  border-top:var(--line);
+  border-bottom:var(--line);
+  background:var(--acid);
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.ticker span{animation:marquee 18s linear infinite; padding-right:40px}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nav{
+  height:56px;
+  display:grid;
+  grid-template-columns:240px 1fr 90px 130px;
+  align-items:center;
+  border-bottom:var(--line);
+}
+.brand{
+  font-size:18px;
+  font-weight:1000;
+  letter-spacing:-.03em;
+  padding-left:28px;
+}
+.navlinks{
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.09em;
+  text-align:center;
+}
+.pill{
+  border:var(--line);
+  border-radius:999px;
+  padding:13px 18px;
+  font-size:11px;
+  font-weight:950;
+  text-align:center;
+}
+.pill.dark{background:var(--ink);color:var(--paper)}
+.hero{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  min-height:820px;
+}
+.cell{border-right:var(--line);border-bottom:var(--line);position:relative;overflow:hidden}
+.cell:last-child{border-right:0}
+.hero-copy{
+  grid-column:1/3;
+  padding:60px 34px;
+}
+.hero h1{
+  margin:0;
+  font-size:clamp(74px,8vw,126px);
+  line-height:.84;
+  letter-spacing:-.085em;
+  font-weight:1000;
+  max-width:850px;
+}
+.subcopy{
+  max-width:420px;
+  margin-top:30px;
+  margin-left:auto;
+  font-size:15px;
+  line-height:1.5;
+}
+.photo{
+  min-height:330px;
+  background:linear-gradient(160deg,var(--sky),#fff 42%,var(--paper));
+  border-bottom:var(--line);
+  position:relative;
+  overflow:hidden;
+}
+.photo:before{
+  content:"";
+  position:absolute;
+  width:44%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:var(--ink);
+  left:29%;
+  top:13%;
+}
+.photo:after{
+  content:"";
+  position:absolute;
+  width:42%;
+  height:46%;
+  border:var(--line);
+  border-radius:18px;
+  background:#161616;
+  left:29%;
+  top:32%;
+  transform:rotate(-4deg);
+  box-shadow:18px 18px 0 rgba(215,255,56,.7);
+}
+.labelstrip{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:34px;
+  background:var(--acid);
+  border-top:var(--line);
+  display:flex;align-items:center;
+  padding:0 14px;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.04em;
+}
+.grid-products{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  border-top:var(--line);
+}
+.product-card{
+  min-height:392px;
+  border-right:var(--line);
+  border-bottom:var(--line);
+  background:var(--paper);
+  transition:.25s transform,.25s box-shadow;
+  cursor:pointer;
+}
+.product-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 18px 0 var(--ink);
+}
+.product-card:nth-child(4n){border-right:0}
+.info{
+  height:78px;
+  border-top:var(--line);
+  padding:15px 18px;
+  background:var(--paper);
+}
+.product-card:nth-child(2n) .info{background:var(--acid)}
+.name{font-size:14px;font-weight:950;text-transform:uppercase}
+.price{font-size:13px;margin-top:7px}
+.section-title{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  border-bottom:var(--line);
+}
+.section-title h2{
+  margin:0;
+  padding:50px 34px;
+  font-size:clamp(48px,7vw,96px);
+  line-height:.9;
+  letter-spacing:-.075em;
+}
+.section-title p{
+  margin:0;
+  padding:60px 38px;
+  border-left:var(--line);
+  font-size:17px;
+  line-height:1.55;
+}
+.catalog-bar{
+  min-height:70px;
+  border-bottom:var(--line);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 24px;
+  overflow:auto;
+}
+.chip{
+  border:var(--line);
+  border-radius:999px;
+  padding:11px 18px;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:950;
+}
+.chip.active{background:var(--ink);color:var(--paper)}
+.pdp{
+  display:grid;
+  grid-template-columns:42% 30% 28%;
+  min-height:760px;
+}
+.pdp-main,.pdp-gallery,.pdp-buy{border-right:var(--line);padding:28px}
+.pdp-buy{border-right:0}
+.pdp h2{
+  margin:20px 0;
+  font-size:64px;
+  line-height:.9;
+  letter-spacing:-.07em;
+}
+.sizes{display:flex;gap:8px;margin:28px 0}
+.size{
+  width:50px;height:40px;border:var(--line);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:950;
+}
+.size.active{background:var(--ink);color:var(--paper)}
+.cta{
+  width:100%;
+  border:var(--line);
+  background:var(--acid);
+  height:56px;
+  font-size:14px;
+  font-weight:1000;
+  cursor:pointer;
+}
+.cart-checkout{
+  display:grid;
+  grid-template-columns:1fr 460px;
+  min-height:760px;
+}
+.cart-left{padding:40px 34px}
+.drawer{
+  background:var(--ink);
+  color:var(--paper);
+  border-left:var(--line);
+  padding:32px;
+}
+.drawer h2{font-size:34px;margin:0 0 30px}
+.cart-item{
+  background:var(--paper);
+  color:var(--ink);
+  border:var(--line);
+  margin-bottom:14px;
+  display:grid;
+  grid-template-columns:80px 1fr 80px;
+  gap:16px;
+  padding:12px;
+  align-items:center;
+}
+.thumb{
+  width:72px;height:72px;border:var(--line);
+  background:linear-gradient(160deg,var(--sky),var(--paper));
+  position:relative;
+}
+.thumb:after{
+  content:"";
+  width:28px;height:42px;background:var(--ink);
+  position:absolute;left:22px;top:18px;border-radius:8px;
+}
+.admin{
+  display:grid;
+  grid-template-columns:250px 1fr;
+  min-height:880px;
+}
+.sidebar{
+  background:var(--ink);
+  color:var(--paper);
+  padding:32px 24px;
+  border-right:var(--line);
+}
+.sidebar .logo{color:var(--acid);font-weight:1000;font-size:18px;margin-bottom:50px}
+.side-item{
+  border:1px solid var(--paper);
+  padding:13px 16px;
+  margin-bottom:12px;
+  font-size:12px;
+  font-weight:950;
+}
+.side-item.active{background:var(--acid);color:var(--ink);border-color:var(--acid)}
+.admin-main{padding:36px}
+.admin-main h2{
+  margin:0;
+  font-size:54px;
+  letter-spacing:-.06em;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+  margin:30px 0;
+}
+.stat{
+  border:var(--line);
+  padding:18px;
+  min-height:120px;
+}
+.stat:nth-child(2){background:var(--acid)}
+.stat b{font-size:48px;display:block;margin-top:14px}
+.table{
+  border:var(--line);
+}
+.row{
+  display:grid;
+  grid-template-columns:70px 1.3fr 1fr 1fr 140px;
+  align-items:center;
+  min-height:74px;
+  border-bottom:var(--line);
+  padding:10px 16px;
+  gap:16px;
+}
+.row:last-child{border-bottom:0}
+.upload-layout{
+  display:grid;
+  grid-template-columns:1fr 430px;
+  gap:28px;
+}
+.formbox,.uploadbox{border:var(--line);padding:28px}
+.input{
+  border:var(--line);
+  height:48px;
+  padding:14px 16px;
+  margin:8px 0 22px;
+  background:#fff;
+}
+.uploadbox{
+  background:var(--ink);
+  color:var(--paper);
+}
+.dropzone{
+  height:190px;
+  border:1.5px dashed var(--paper);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-weight:1000;
+  margin:26px 0;
+}
+.upload-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+.upload-tile{
+  height:102px;
+  background:var(--paper);
+  color:var(--ink);
+  border:var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:11px;
+  font-weight:950;
+}
+.mobile-wrap{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:20px;
+  padding:40px;
+}
+.mobile{
+  height:620px;
+  border:var(--line);
+  background:var(--paper);
+  overflow:hidden;
+}
+.mobile h3{
+  font-size:52px;
+  line-height:.88;
+  letter-spacing:-.06em;
+  padding:24px 18px;
+  margin:0;
+}
+@media(max-width:900px){
+  .nav{grid-template-columns:1fr 80px}.navlinks,.nav .pill:not(.dark){display:none}
+  .hero,.section-title,.pdp,.cart-checkout,.admin,.upload-layout,.mobile-wrap{grid-template-columns:1fr}
+  .grid-products{grid-template-columns:1fr 1fr}
+  .pdp-main,.pdp-gallery,.pdp-buy{border-right:0;border-bottom:var(--line)}
+}
+</style>
+</head>
+<body>
+
+<section class="page">
+  <div class="ticker"><span>NEW COLLECTION • OPEN FOR PRE-ORDER • FREE SHIPPING ABOVE ₹1999 • MIDNIGHT DROP LIVE • </span><span>NEW COLLECTION • OPEN FOR PRE-ORDER • FREE SHIPPING ABOVE ₹1999 • MIDNIGHT DROP LIVE • </span></div>
+  <nav class="nav">
+    <div class="brand">COLLUSION//ECOM</div>
+    <div class="navlinks">NEW COLLECTION &nbsp;&nbsp; CATALOG &nbsp;&nbsp; ABOUT &nbsp;&nbsp; JOURNAL &nbsp;&nbsp; CONTACT</div>
+    <div class="navlinks">CART 03</div>
+    <div class="pill dark">SHOP ALL</div>
+  </nav>
+
+  <div class="hero">
+    <div class="cell hero-copy">
+      <h1>FEEL YOUNG,<br/>BE UNSTOPPABLE.</h1>
+      <p class="subcopy">A drop-first fashion marketplace where every product launches like a poster, every collection behaves like a magazine spread, and checkout stays brutally simple.</p>
+    </div>
+    <div class="cell"><div class="photo"><div class="labelstrip">WEB TEE DROP</div></div></div>
+    <div class="cell"><div class="photo"><div class="labelstrip">BACK PRINT</div></div></div>
+    <div class="cell"><div class="photo"><div class="labelstrip">LOOK 03</div></div></div>
+  </div>
+  <div class="ticker"><span>SCROLL DOWN → STREET EDITORIAL SHOPPING → ADMIN IMAGE DROP CMS → </span><span>SCROLL DOWN → STREET EDITORIAL SHOPPING → ADMIN IMAGE DROP CMS → </span></div>
+</section>
+
+<section class="page">
+  <div class="section-title">
+    <h2>SHOP BY CHAOS,<br/>FILTER BY CONTROL.</h2>
+    <p>Catalog keeps the raw magazine energy, but UX is practical: search, filters, sort, grid/list toggle, stock status, persistent cart drawer.</p>
+  </div>
+  <div class="catalog-bar">
+    <div class="chip active">ALL</div><div class="chip">TEES</div><div class="chip">BOTTOMS</div><div class="chip">FOOTWEAR</div><div class="chip">ACCESSORIES</div><div class="chip">₹0—₹999</div><div class="chip">IN STOCK</div><div class="chip">SORT: DROP NEWEST</div>
+  </div>
+  <div class="grid-products">
+    <div class="product-card"><div class="photo"></div><div class="info"><div class="name">Street Letter Top</div><div class="price">₹1,499</div></div></div>
+    <div class="product-card"><div class="photo" style="background:linear-gradient(160deg,var(--clay),#fff)"></div><div class="info"><div class="name">Nylon Plain Maxi Skirt</div><div class="price">₹2,099</div></div></div>
+    <div class="product-card"><div class="photo"></div><div class="info"><div class="name">Chrome Platform Clogs</div><div class="price">₹3,499</div></div></div>
+    <div class="product-card"><div class="photo" style="background:linear-gradient(160deg,#ececff,#fff)"></div><div class="info"><div class="name">Flame Denim Pants</div><div class="price">₹2,899</div></div></div>
+  </div>
+</section>
+
+<section class="page">
+  <div class="pdp">
+    <div class="pdp-main"><div class="photo" style="height:640px"><div class="labelstrip">MAIN IMAGE</div></div></div>
+    <div class="pdp-gallery">
+      <div class="photo" style="height:210px;margin-bottom:18px"><div class="labelstrip">FRONT</div></div>
+      <div class="photo" style="height:210px;margin-bottom:18px;background:linear-gradient(160deg,var(--clay),#fff)"><div class="labelstrip">BACK</div></div>
+      <div class="photo" style="height:160px"><div class="labelstrip">DETAIL</div></div>
+    </div>
+    <div class="pdp-buy">
+      <h2>STREET LETTER<br/>OVERSIZED TOP</h2>
+      <h3>₹1,499</h3>
+      <p>Poster-first product detail page. Gallery behaves like an editorial collage, but purchase controls stay fixed and obvious.</p>
+      <div class="sizes"><div class="size">XS</div><div class="size">S</div><div class="size active">M</div><div class="size">L</div><div class="size">XL</div></div>
+      <button class="cta">ADD TO CART — BOUNCE BADGE</button>
+    </div>
+  </div>
+</section>
+
+<section class="page">
+  <div class="cart-checkout">
+    <div class="cart-left">
+      <h2 style="font-size:76px;line-height:.9;letter-spacing:-.07em;margin:0">CART SLIDES IN.<br/>CHECKOUT STAYS FAST.</h2>
+      <p style="max-width:540px;font-size:18px;line-height:1.5">The cart is never a full-page redirect. It stays as a brutal side panel with quantity controls, summary, and guided checkout steps.</p>
+    </div>
+    <div class="drawer">
+      <h2>YOUR BAG / 03</h2>
+      <div class="cart-item"><div class="thumb"></div><div><b>STREET LETTER TOP</b><br/>M · Black</div><b>₹1,499</b></div>
+      <div class="cart-item"><div class="thumb"></div><div><b>CHROME CLOGS</b><br/>UK 8 · Silver</div><b>₹3,499</b></div>
+      <div class="cart-item"><div class="thumb"></div><div><b>MAXI SKIRT</b><br/>S · Olive</div><b>₹2,099</b></div>
+      <div style="background:var(--acid);color:var(--ink);border:var(--line);padding:22px;margin-top:28px;font-weight:950;line-height:1.8">
+        SUBTOTAL ₹7,097<br/>DISCOUNT −₹600<br/>DELIVERY FREE<br/>TOTAL ₹6,497
+      </div>
+      <button class="cta" style="margin-top:18px">PAY NOW</button>
+    </div>
+  </div>
+</section>
+
+<section class="page admin">
+  <aside class="sidebar">
+    <div class="logo">ECOM//ADMIN</div>
+    <div class="side-item">DASHBOARD</div>
+    <div class="side-item active">PRODUCTS</div>
+    <div class="side-item">COLLECTIONS</div>
+    <div class="side-item">ORDERS</div>
+    <div class="side-item">CUSTOMERS</div>
+  </aside>
+  <main class="admin-main">
+    <h2>PRODUCT OPERATIONS</h2>
+    <p>Admin manages product drops, gallery images, stock, categories, and live collection hero assets.</p>
+    <div class="stats">
+      <div class="stat">LIVE PRODUCTS <b>128</b></div>
+      <div class="stat">LOW STOCK <b>09</b></div>
+      <div class="stat">PENDING IMAGES <b>14</b></div>
+      <div class="stat">ORDERS TODAY <b>72</b></div>
+    </div>
+    <div class="table">
+      <div class="row"><div class="thumb"></div><b>STREET LETTER TOP</b><span>5 images</span><span>In stock 42</span><b>LIVE</b></div>
+      <div class="row"><div class="thumb"></div><b>CHROME PLATFORM CLOGS</b><span>3 images</span><span>Low stock 6</span><b>LIVE</b></div>
+      <div class="row"><div class="thumb"></div><b>NYLON MAXI SKIRT</b><span>Missing gallery</span><span>In stock 23</span><b>DRAFT</b></div>
+    </div>
+  </main>
+</section>
+
+<section class="page admin">
+  <aside class="sidebar">
+    <div class="logo">ECOM//ADMIN</div>
+    <div class="side-item active">ADD PRODUCT</div>
+    <div class="side-item">IMAGE LIBRARY</div>
+    <div class="side-item">COLLECTION HEROES</div>
+  </aside>
+  <main class="admin-main">
+    <h2>ADD NEW DROP ENTRY</h2>
+    <p>Yes, admin can add images to every product entry: main image, gallery, variant images, hero image, crop/focus point, and alt text.</p>
+    <div class="upload-layout">
+      <div class="formbox">
+        <b>PRODUCT BASICS</b>
+        <div class="input">Product name — Street Letter Top</div>
+        <div class="input">Slug — street-letter-top</div>
+        <div class="input">Category — Tops / Streetwear</div>
+        <div class="input">Price — ₹1499</div>
+        <div class="input">Stock — 42 units</div>
+        <button class="cta">SAVE PRODUCT</button>
+      </div>
+      <div class="uploadbox">
+        <h2 style="color:var(--acid);font-size:30px;margin:0">IMAGE STACK</h2>
+        <p>Fields: mainImage, galleryImages[], variantImages[], collectionHeroImage, altText, focalPoint, sortOrder.</p>
+        <div class="dropzone">DRAG MAIN PRODUCT IMAGE<br/>PNG / JPG / WEBP</div>
+        <div class="upload-grid">
+          <div class="upload-tile">GALLERY 01</div><div class="upload-tile">GALLERY 02</div><div class="upload-tile">VARIANT BLACK</div>
+          <div class="upload-tile">VARIANT LIME</div><div class="upload-tile">COLLECTION HERO</div><div class="upload-tile">LOOKBOOK CROP</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<section class="page">
+  <div class="mobile-wrap">
+    <div class="mobile"><div class="ticker"><span>NEW DROP · NEW DROP · </span></div><h3>FEEL<br/>YOUNG</h3><div class="photo"></div><button class="cta">SHOP THE DROP</button></div>
+    <div class="mobile"><div class="ticker"><span>FILTER · FILTER · </span></div><h3>SHOP<br/>GRID</h3><div class="photo"></div><button class="cta">FILTER</button></div>
+    <div class="mobile"><div class="ticker"><span>PDP · PDP · </span></div><h3>STREET<br/>LETTER</h3><div class="photo"></div><button class="cta">ADD TO CART</button></div>
+    <div class="mobile"><div class="ticker"><span>ADMIN · ADMIN · </span></div><h3>ADD<br/>IMAGE</h3><div class="photo"></div><button class="cta" style="background:var(--ink);color:var(--paper)">UPLOAD</button></div>
+  </div>
+</section>
+
+</body>
+</html>

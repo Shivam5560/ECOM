@@ -1,0 +1,134 @@
+[
+  {
+    "name": "reserve_inventory",
+    "description": "Local transaction: product-service reserves stock for checkout. Compensation: release_inventory_reservation.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 3,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 5,
+    "timeoutSeconds": 60,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "responseTimeoutSeconds": 45
+  },
+  {
+    "name": "validate_cod_payment",
+    "description": "Validation task: payment-service verifies COD is selected. No compensation because it does not mutate state.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 1,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 0,
+    "timeoutSeconds": 30,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "responseTimeoutSeconds": 20
+  },
+  {
+    "name": "authorize_cod_payment",
+    "description": "Local transaction: payment-service creates an idempotent COD authorization record. Compensation: cancel_cod_authorization.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 3,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 5,
+    "timeoutSeconds": 60,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "responseTimeoutSeconds": 45
+  },
+  {
+    "name": "confirm_order",
+    "description": "Local transaction: order-service marks the pending order as confirmed. Compensation: fail_order.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 3,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 5,
+    "timeoutSeconds": 60,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "responseTimeoutSeconds": 45
+  },
+  {
+    "name": "commit_inventory",
+    "description": "Local transaction: product-service commits a successful reservation as sold stock. Before commit succeeds, compensation remains release_inventory_reservation; after commit succeeds, reversal is a separate business return/cancel flow.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 3,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 5,
+    "timeoutSeconds": 60,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "responseTimeoutSeconds": 45
+  },
+  {
+    "name": "publish_order_confirmed",
+    "description": "Terminal saga event: workflow-service publishes order.confirmed after critical checkout succeeds. No compensation.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 5,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 10,
+    "timeoutSeconds": 60,
+    "timeoutPolicy": "TIME_OUT_WF",
+    "responseTimeoutSeconds": 45
+  },
+  {
+    "name": "generate_invoice",
+    "description": "Post-confirmation side effect: invoice-service generates invoice metadata and PDF. Failure does not compensate checkout.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 3,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 10,
+    "timeoutSeconds": 120,
+    "timeoutPolicy": "ALERT_ONLY",
+    "responseTimeoutSeconds": 90
+  },
+  {
+    "name": "send_order_notification",
+    "description": "Post-confirmation side effect: notification-service persists and pushes customer confirmation. Failure does not compensate checkout.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 3,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 10,
+    "timeoutSeconds": 120,
+    "timeoutPolicy": "ALERT_ONLY",
+    "responseTimeoutSeconds": 90
+  },
+  {
+    "name": "release_inventory_reservation",
+    "description": "Compensation: product-service releases the reservation created by reserve_inventory.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 5,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 10,
+    "timeoutSeconds": 60,
+    "timeoutPolicy": "ALERT_ONLY",
+    "responseTimeoutSeconds": 45
+  },
+  {
+    "name": "cancel_cod_authorization",
+    "description": "Compensation: payment-service cancels COD authorization created by authorize_cod_payment.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 5,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 10,
+    "timeoutSeconds": 60,
+    "timeoutPolicy": "ALERT_ONLY",
+    "responseTimeoutSeconds": 45
+  },
+  {
+    "name": "fail_order",
+    "description": "Compensation: order-service marks checkout as failed when the saga cannot complete.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 5,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 10,
+    "timeoutSeconds": 60,
+    "timeoutPolicy": "ALERT_ONLY",
+    "responseTimeoutSeconds": 45
+  },
+  {
+    "name": "publish_checkout_failed",
+    "description": "Compensation event: workflow-service publishes order.checkout.failed for observability and user-facing failure handling.",
+    "ownerEmail": "ops@ecom.local",
+    "retryCount": 5,
+    "retryLogic": "FIXED",
+    "retryDelaySeconds": 10,
+    "timeoutSeconds": 60,
+    "timeoutPolicy": "ALERT_ONLY",
+    "responseTimeoutSeconds": 45
+  }
+]

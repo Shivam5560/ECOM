@@ -1,0 +1,5 @@
+# Local Temporal dynamic config for the auto-setup container.
+# Keep this intentionally empty; the file must exist because
+# DYNAMIC_CONFIG_FILE_PATH points here, but local dev does not need
+# any overrides.
+{}

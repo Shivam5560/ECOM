@@ -16,7 +16,7 @@ describe("auth api", () => {
       { baseUrl: "http://auth.test", fetcher },
     );
 
-    expect(fetcher).toHaveBeenCalledWith("http://auth.test/auth/login", {
+    expect(fetcher).toHaveBeenCalledWith("http://auth.test/api/v1/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: "buyer@ecom.dev", password: "secret" }),

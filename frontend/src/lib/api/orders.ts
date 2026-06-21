@@ -2,7 +2,7 @@ import { getJson, postJson, type ApiOptions } from "./client";
 import type { CartItem } from "../../types";
 import type { GridResponse } from "./products";
 
-const defaultOrderUrl = import.meta.env.VITE_ORDER_API_URL ?? "";
+const defaultApiUrl = import.meta.env.VITE_API_BASE_URL ?? "";
 
 export type Order = {
   id: string;
@@ -14,29 +14,32 @@ export type Order = {
 };
 
 export async function createOrder(
-  { userId, items, options = {} }: {
-  userId: string;
+  { items, paymentMethod, options = {} }: {
   items: CartItem[];
+  paymentMethod: "cod";
   options?: ApiOptions;
 }): Promise<Order> {
-  return postJson<Order, { user_id: string; lines: Order["lines"]; correlation_id: string }>(
-    "/orders",
+  return postJson<
+    Order,
+    { lines: Array<{ product_id: string; quantity: number }>; correlation_id: string; payment_method: "cod" }
+  >(
+    "/api/v1/orders",
     {
-      user_id: userId,
       lines: items.map((item) => ({
         product_id: item.product.id,
         quantity: item.quantity,
-        unit_price: item.product.price,
       })),
       correlation_id: `ui-${Date.now()}`,
+      payment_method: paymentMethod,
     },
-    { baseUrl: options.baseUrl ?? defaultOrderUrl, fetcher: options.fetcher },
+    { baseUrl: options.baseUrl ?? defaultApiUrl, fetcher: options.fetcher, token: options.token },
   );
 }
 
 export async function listOrders(options: ApiOptions = {}): Promise<GridResponse<Order>> {
-  return getJson<GridResponse<Order>>("/orders", {
-    baseUrl: options.baseUrl ?? defaultOrderUrl,
+  return getJson<GridResponse<Order>>("/api/v1/orders", {
+    baseUrl: options.baseUrl ?? defaultApiUrl,
     fetcher: options.fetcher,
+    token: options.token,
   });
 }

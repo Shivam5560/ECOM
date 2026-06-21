@@ -1,7 +1,8 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16
     container_name: ecommerce-postgres
+    command: ["postgres", "-c", "fsync=off"]
     environment:
       POSTGRES_USER: ecom
       POSTGRES_PASSWORD: ecom
@@ -13,9 +14,11 @@ services:
       - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ecom -d postgres"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s        # was 10s — check more frequently
+      timeout: 3s         # was 5s
       retries: 5
+      start_period: 10s   # NEW: don't count failures for first 10s while postgres boots
+    stop_grace_period: 5s
 
   redis:
     image: redis:7-alpine
@@ -24,51 +27,55 @@ services:
       - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s    # redis starts fast, short grace period
+    stop_grace_period: 3s
 
   rabbitmq:
-    image: rabbitmq:3.13-management-alpine
+    image: rabbitmq:3.13-management
     container_name: ecommerce-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: ecom
       RABBITMQ_DEFAULT_PASS: ecom
+      RABBITMQ_ERLANG_COOKIE: ecom-local-dev-cookie
     ports:
       - "5672:5672"
       - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s   # rabbitmq is slow to boot — give it 30s grace
+    stop_grace_period: 10s
 
-  temporal:
-    image: temporalio/auto-setup:1.25
-    container_name: ecommerce-temporal
+  conductor:
+    image: conductoross/conductor:next
+    container_name: ecommerce-conductor
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      DB: postgresql
-      DB_PORT: 5432
-      POSTGRES_USER: ecom
-      POSTGRES_PWD: ecom
-      POSTGRES_SEEDS: postgres
-      DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
+      CONFIG_PROP: config-postgres-ecom.properties
+      CONDUCTOR_DB_TYPE: postgres
+      CONDUCTOR_QUEUE_TYPE: postgres
+      CONDUCTOR_EXTERNAL_PAYLOAD_STORAGE_TYPE: postgres
+      CONDUCTOR_INDEXING_ENABLED: "true"
+      CONDUCTOR_INDEXING_TYPE: postgres
+      CONDUCTOR_ELASTICSEARCH_VERSION: "0"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/conductor_db
+      SPRING_DATASOURCE_USERNAME: ecom
+      SPRING_DATASOURCE_PASSWORD: ecom
+    volumes:
+      - ./docker/conductor/config-postgres-ecom.properties:/app/config/config-postgres-ecom.properties:ro
     ports:
-      - "7233:7233"
-
-  temporal-ui:
-    image: temporalio/ui:2.31.2
-    container_name: ecommerce-temporal-ui
-    depends_on:
-      - temporal
-    environment:
-      TEMPORAL_ADDRESS: temporal:7233
-      TEMPORAL_CORS_ORIGINS: http://localhost:3000
-    ports:
+      - "5000:5000"
       - "8088:8080"
+    stop_grace_period: 5s
 
   consul:
     image: hashicorp/consul:1.20
@@ -77,6 +84,32 @@ services:
     ports:
       - "8500:8500"
       - "8600:8600/udp"
+    healthcheck:
+      test: ["CMD", "consul", "members"]
+      interval: 5s         # was 10s
+      timeout: 3s          # was 5s
+      retries: 3           # was 5 — consul starts fast
+      start_period: 5s     # NEW: brief grace period
+    stop_grace_period: 3s
+
+  traefik:
+    image: traefik:v3.1
+    container_name: ecommerce-traefik
+    depends_on:
+      consul:
+        condition: service_healthy
+    ports:
+      - "8090:80"    # Gateway entrypoint — use http://localhost:8090 as API base
+      - "8080:8080"  # Traefik dashboard → http://localhost:8080/dashboard/
+    volumes:
+      - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+    restart: unless-stopped
+    stop_grace_period: 3s   # NEW: traefik shuts down fast
 
 volumes:
   postgres-data:
+  rabbitmq-data:
+
+networks:
+  default:
+    name: ecom_default

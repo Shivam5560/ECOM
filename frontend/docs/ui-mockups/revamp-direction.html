@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ECOM UI Revamp Direction</title>
+    <style>
+      :root {
+        --paper: #f7f5ea;
+        --ink: #111;
+        --muted: #5b5b54;
+        --line: #111;
+        --acid: #d7ff38;
+        --coral: #ff5fa2;
+        --cobalt: #bdeaff;
+        --soft: #ede2d1;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      main { width: min(1180px, calc(100% - 32px)); margin: 32px auto; }
+      h1, h2, h3, p { margin: 0; }
+      .intro { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+      .intro h1 { font-size: clamp(30px, 5vw, 58px); line-height: .96; max-width: 760px; }
+      .intro p { color: var(--muted); max-width: 800px; line-height: 1.6; }
+      .grid { display: grid; grid-template-columns: 1.55fr .9fr; gap: 18px; align-items: start; }
+      .panel {
+        border: 2px solid var(--line);
+        background: var(--paper);
+        box-shadow: 8px 8px 0 var(--ink);
+      }
+      .topbar {
+        min-height: 68px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 18px;
+        align-items: center;
+        padding: 0 18px;
+        border-bottom: 2px solid var(--line);
+      }
+      .brand { display: flex; gap: 10px; align-items: center; font-weight: 1000; }
+      .mark { width: 32px; height: 32px; border: 2px solid var(--line); background: var(--acid); }
+      nav { display: flex; justify-content: center; gap: 18px; font-size: 12px; font-weight: 900; text-transform: uppercase; color: #3f4654; }
+      .actions { display: flex; gap: 8px; }
+      button, .button {
+        border: 2px solid var(--line);
+        border-radius: 999px;
+        background: var(--paper);
+        min-height: 40px;
+        padding: 0 14px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+      .button.primary, button.primary { background: var(--ink); color: var(--paper); }
+      .button.acid { background: var(--acid); color: var(--ink); }
+      .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 30px; align-items: center; }
+      .hero-copy { display: flex; flex-direction: column; gap: 16px; }
+      .hero-copy h2 { font-size: 48px; line-height: .94; }
+      .hero-copy p { color: var(--muted); line-height: 1.5; }
+      .commerce-art { min-height: 280px; border: 2px solid var(--line); background: var(--cobalt); position: relative; overflow: hidden; }
+      .commerce-art::before { content: ""; position: absolute; inset: 24px 80px 60px 44px; border: 2px solid var(--line); background: var(--paper); transform: rotate(-5deg); }
+      .commerce-art::after { content: "COD READY"; position: absolute; right: 24px; bottom: 24px; border: 2px solid var(--line); background: var(--coral); color: white; padding: 12px 16px; font-weight: 1000; }
+      .products { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 0 30px 30px; }
+      .card { border: 2px solid var(--line); background: #fffdf4; min-height: 150px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+      .thumb { height: 74px; border: 2px solid var(--line); background: var(--soft); }
+      .meta { display: flex; justify-content: space-between; gap: 10px; font-weight: 900; }
+      .side { display: flex; flex-direction: column; gap: 18px; }
+      .sheet { border: 2px solid var(--line); background: #fffdf4; box-shadow: 8px 8px 0 var(--ink); }
+      .sheet-head { display: flex; justify-content: space-between; gap: 14px; align-items: start; padding: 18px; border-bottom: 2px solid var(--line); }
+      .sheet-head small { display: block; color: var(--muted); font-weight: 900; text-transform: uppercase; }
+      .sheet-body { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+      .field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 900; text-transform: uppercase; }
+      .input { border: 2px solid var(--line); background: var(--paper); min-height: 42px; padding: 10px; }
+      .link-note { border: 2px solid var(--line); background: var(--acid); padding: 10px; font-size: 12px; line-height: 1.4; font-weight: 800; }
+      .cart-line { display: grid; grid-template-columns: 48px 1fr auto; gap: 10px; align-items: center; }
+      .mini-thumb { width: 48px; height: 48px; border: 2px solid var(--line); background: var(--cobalt); }
+      .structure { margin-top: 22px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      .structure div { border: 2px solid var(--line); background: #fffdf4; padding: 14px; min-height: 98px; }
+      .structure strong { display: block; margin-bottom: 8px; }
+      .structure span { color: var(--muted); font-size: 13px; line-height: 1.4; }
+      @media (max-width: 900px) {
+        .grid, .hero, .products, .structure { grid-template-columns: 1fr; }
+        nav { display: none; }
+        .topbar { grid-template-columns: 1fr auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="intro">
+        <h1>Recommended ECOM revamp direction</h1>
+        <p>
+          Keep the current bold editorial commerce look, but rebuild it as a React app shell:
+          small feature components, shadcn-style primitives, clear auth/cart sheets, and gateway
+          auth links that do not point directly at auth-service or user-service.
+        </p>
+      </section>
+      <section class="grid">
+        <div class="panel">
+          <div class="topbar">
+            <div class="brand"><span class="mark"></span><span>ECOM</span></div>
+            <nav><span>Catalog</span><span>Orders</span><span>Support</span></nav>
+            <div class="actions"><button>Sign in</button><button class="primary">Cart 2</button></div>
+          </div>
+          <div class="hero">
+            <div class="hero-copy">
+              <h2>Gateway storefront</h2>
+              <p>Cleaner first viewport with one primary action, visible product signal, and less scattered dashboard copy.</p>
+              <div><span class="button acid">Shop collection</span></div>
+            </div>
+            <div class="commerce-art"></div>
+          </div>
+          <div class="products">
+            <div class="card"><div class="thumb"></div><div class="meta"><span>Product card</span><span>$42</span></div><button>Add to cart</button></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><span>Filter state</span><span>$68</span></div><button>Add to cart</button></div>
+            <div class="card"><div class="thumb"></div><div class="meta"><span>Stock badge</span><span>$25</span></div><button>Add to cart</button></div>
+          </div>
+        </div>
+        <aside class="side">
+          <div class="sheet">
+            <div class="sheet-head">
+              <div><small>Gateway auth</small><h3>Sign in</h3></div>
+              <button>Back</button>
+            </div>
+            <div class="sheet-body">
+              <label class="field">Email <span class="input">user@example.com</span></label>
+              <label class="field">Password <span class="input">••••••••</span></label>
+              <button class="primary">Sign in</button>
+              <button>Create account</button>
+              <div class="link-note">Both actions call the gateway auth URL, not auth-service or user-service directly.</div>
+            </div>
+          </div>
+          <div class="sheet">
+            <div class="sheet-head">
+              <div><small>Cart sheet</small><h3>Review cart</h3></div>
+              <button>Back</button>
+            </div>
+            <div class="sheet-body">
+              <div class="cart-line"><span class="mini-thumb"></span><span>Quantity controls stay here</span><strong>$84</strong></div>
+              <button class="primary">Place COD order</button>
+              <button>Continue shopping</button>
+            </div>
+          </div>
+        </aside>
+      </section>
+      <section class="structure">
+        <div><strong>components/layout</strong><span>AppShell, Header, SideSheet wrappers.</span></div>
+        <div><strong>components/catalog</strong><span>HeroBanner, ProductCard, CatalogSection.</span></div>
+        <div><strong>components/auth</strong><span>AuthSheet with login/register gateway actions.</span></div>
+        <div><strong>components/cart</strong><span>CartSheet, CartLine, checkout status and back actions.</span></div>
+      </section>
+    </main>
+  </body>
+</html>

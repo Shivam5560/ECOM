@@ -1,0 +1,462 @@
+{
+  "name": "order_checkout_cod",
+  "description": "COD checkout saga with explicit error boundaries. Each local transaction is followed by a boundary that either continues the saga or runs compensating transactions.",
+  "version": 3,
+  "schemaVersion": 2,
+  "ownerEmail": "ops@ecom.local",
+  "tasks": [
+    {
+      "name": "reserve_inventory",
+      "taskReferenceName": "reserve_inventory",
+      "type": "SIMPLE",
+      "optional": true,
+      "inputParameters": {
+        "local_transaction": "product-service reserves stock",
+        "compensation": "none if reservation failed; release_inventory_reservation after reservation succeeds",
+        "reservation_id": "${workflow.input.reservation_id}",
+        "order_id": "${workflow.input.order_id}",
+        "lines": "${workflow.input.lines}"
+      }
+    },
+    {
+      "name": "inventory_reservation_boundary",
+      "taskReferenceName": "inventory_reservation_boundary",
+      "type": "SWITCH",
+      "evaluatorType": "value-param",
+      "expression": "reservation_status",
+      "inputParameters": {
+        "reservation_status": "${reserve_inventory.status}"
+      },
+      "decisionCases": {
+        "FAILED": [
+          {
+            "name": "fail_order",
+            "taskReferenceName": "fail_order_after_inventory_reservation",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "reverses": "pending order created before workflow start",
+              "order_id": "${workflow.input.order_id}",
+              "reason": "inventory reservation failed",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "publish_checkout_failed",
+            "taskReferenceName": "publish_checkout_failed_after_inventory_reservation",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "event_type": "order.checkout.failed",
+              "order_id": "${workflow.input.order_id}",
+              "user_id": "${workflow.input.user_id}",
+              "reason": "inventory reservation failed",
+              "correlation_id": "${workflow.input.correlation_id}",
+              "idempotency_key": "checkout-failed-${workflow.input.order_id}"
+            }
+          },
+          {
+            "name": "terminate_checkout_failed",
+            "taskReferenceName": "terminate_after_inventory_reservation",
+            "type": "TERMINATE",
+            "inputParameters": {
+              "terminationStatus": "FAILED",
+              "workflowOutput": {
+                "reason": "inventory reservation failed"
+              }
+            }
+          }
+        ]
+      },
+      "defaultCase": []
+    },
+    {
+      "name": "validate_cod_payment",
+      "taskReferenceName": "validate_cod_payment",
+      "type": "SIMPLE",
+      "optional": true,
+      "inputParameters": {
+        "local_transaction": "payment-service validates selected payment method",
+        "compensation": "none",
+        "order_id": "${workflow.input.order_id}",
+        "payment_method": "${workflow.input.payment_method}",
+        "correlation_id": "${workflow.input.correlation_id}"
+      }
+    },
+    {
+      "name": "payment_validation_boundary",
+      "taskReferenceName": "payment_validation_boundary",
+      "type": "SWITCH",
+      "evaluatorType": "value-param",
+      "expression": "payment_validation_status",
+      "inputParameters": {
+        "payment_validation_status": "${validate_cod_payment.status}"
+      },
+      "decisionCases": {
+        "FAILED": [
+          {
+            "name": "release_inventory_reservation",
+            "taskReferenceName": "release_inventory_after_payment_validation",
+            "type": "SIMPLE",
+            "optional": true,
+            "inputParameters": {
+              "reverses": "reserve_inventory",
+              "reservation_id": "${workflow.input.reservation_id}",
+              "order_id": "${workflow.input.order_id}",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "fail_order",
+            "taskReferenceName": "fail_order_after_payment_validation",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "reverses": "pending order created before workflow start",
+              "order_id": "${workflow.input.order_id}",
+              "reason": "COD validation failed",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "publish_checkout_failed",
+            "taskReferenceName": "publish_checkout_failed_after_payment_validation",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "event_type": "order.checkout.failed",
+              "order_id": "${workflow.input.order_id}",
+              "user_id": "${workflow.input.user_id}",
+              "reason": "COD validation failed",
+              "correlation_id": "${workflow.input.correlation_id}",
+              "idempotency_key": "checkout-failed-${workflow.input.order_id}"
+            }
+          },
+          {
+            "name": "terminate_checkout_failed",
+            "taskReferenceName": "terminate_after_payment_validation",
+            "type": "TERMINATE",
+            "inputParameters": {
+              "terminationStatus": "FAILED",
+              "workflowOutput": {
+                "reason": "COD validation failed"
+              }
+            }
+          }
+        ]
+      },
+      "defaultCase": []
+    },
+    {
+      "name": "authorize_cod_payment",
+      "taskReferenceName": "authorize_cod_payment",
+      "type": "SIMPLE",
+      "optional": true,
+      "inputParameters": {
+        "local_transaction": "payment-service authorizes COD",
+        "compensation": "cancel_cod_authorization",
+        "payment_id": "${workflow.input.payment_id}",
+        "order_id": "${workflow.input.order_id}",
+        "amount": "${workflow.input.total}",
+        "user_id": "${workflow.input.user_id}",
+        "idempotency_key": "${workflow.input.idempotency_key}"
+      }
+    },
+    {
+      "name": "cod_authorization_boundary",
+      "taskReferenceName": "cod_authorization_boundary",
+      "type": "SWITCH",
+      "evaluatorType": "value-param",
+      "expression": "cod_authorization_status",
+      "inputParameters": {
+        "cod_authorization_status": "${authorize_cod_payment.status}"
+      },
+      "decisionCases": {
+        "FAILED": [
+          {
+            "name": "release_inventory_reservation",
+            "taskReferenceName": "release_inventory_after_cod_authorization",
+            "type": "SIMPLE",
+            "optional": true,
+            "inputParameters": {
+              "reverses": "reserve_inventory",
+              "reservation_id": "${workflow.input.reservation_id}",
+              "order_id": "${workflow.input.order_id}",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "fail_order",
+            "taskReferenceName": "fail_order_after_cod_authorization",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "reverses": "pending order created before workflow start",
+              "order_id": "${workflow.input.order_id}",
+              "reason": "COD authorization failed",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "publish_checkout_failed",
+            "taskReferenceName": "publish_checkout_failed_after_cod_authorization",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "event_type": "order.checkout.failed",
+              "order_id": "${workflow.input.order_id}",
+              "user_id": "${workflow.input.user_id}",
+              "reason": "COD authorization failed",
+              "correlation_id": "${workflow.input.correlation_id}",
+              "idempotency_key": "checkout-failed-${workflow.input.order_id}"
+            }
+          },
+          {
+            "name": "terminate_checkout_failed",
+            "taskReferenceName": "terminate_after_cod_authorization",
+            "type": "TERMINATE",
+            "inputParameters": {
+              "terminationStatus": "FAILED",
+              "workflowOutput": {
+                "reason": "COD authorization failed"
+              }
+            }
+          }
+        ]
+      },
+      "defaultCase": []
+    },
+    {
+      "name": "confirm_order",
+      "taskReferenceName": "confirm_order",
+      "type": "SIMPLE",
+      "optional": true,
+      "inputParameters": {
+        "local_transaction": "order-service confirms pending order",
+        "compensation": "fail_order",
+        "order_id": "${workflow.input.order_id}",
+        "correlation_id": "${workflow.input.correlation_id}"
+      }
+    },
+    {
+      "name": "order_confirmation_boundary",
+      "taskReferenceName": "order_confirmation_boundary",
+      "type": "SWITCH",
+      "evaluatorType": "value-param",
+      "expression": "order_confirmation_status",
+      "inputParameters": {
+        "order_confirmation_status": "${confirm_order.status}"
+      },
+      "decisionCases": {
+        "FAILED": [
+          {
+            "name": "cancel_cod_authorization",
+            "taskReferenceName": "cancel_cod_after_order_confirmation",
+            "type": "SIMPLE",
+            "optional": true,
+            "inputParameters": {
+              "reverses": "authorize_cod_payment",
+              "payment_id": "${workflow.input.payment_id}",
+              "order_id": "${workflow.input.order_id}",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "release_inventory_reservation",
+            "taskReferenceName": "release_inventory_after_order_confirmation",
+            "type": "SIMPLE",
+            "optional": true,
+            "inputParameters": {
+              "reverses": "reserve_inventory",
+              "reservation_id": "${workflow.input.reservation_id}",
+              "order_id": "${workflow.input.order_id}",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "fail_order",
+            "taskReferenceName": "fail_order_after_order_confirmation",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "reverses": "confirm_order",
+              "order_id": "${workflow.input.order_id}",
+              "reason": "order confirmation failed",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "publish_checkout_failed",
+            "taskReferenceName": "publish_checkout_failed_after_order_confirmation",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "event_type": "order.checkout.failed",
+              "order_id": "${workflow.input.order_id}",
+              "user_id": "${workflow.input.user_id}",
+              "reason": "order confirmation failed",
+              "correlation_id": "${workflow.input.correlation_id}",
+              "idempotency_key": "checkout-failed-${workflow.input.order_id}"
+            }
+          },
+          {
+            "name": "terminate_checkout_failed",
+            "taskReferenceName": "terminate_after_order_confirmation",
+            "type": "TERMINATE",
+            "inputParameters": {
+              "terminationStatus": "FAILED",
+              "workflowOutput": {
+                "reason": "order confirmation failed"
+              }
+            }
+          }
+        ]
+      },
+      "defaultCase": []
+    },
+    {
+      "name": "commit_inventory",
+      "taskReferenceName": "commit_inventory",
+      "type": "SIMPLE",
+      "optional": true,
+      "inputParameters": {
+        "local_transaction": "product-service commits reserved stock as sold",
+        "compensation": "cancel_cod_authorization, release_inventory_reservation, fail_order if commit fails",
+        "reservation_id": "${workflow.input.reservation_id}"
+      }
+    },
+    {
+      "name": "inventory_commit_boundary",
+      "taskReferenceName": "inventory_commit_boundary",
+      "type": "SWITCH",
+      "evaluatorType": "value-param",
+      "expression": "inventory_commit_status",
+      "inputParameters": {
+        "inventory_commit_status": "${commit_inventory.status}"
+      },
+      "decisionCases": {
+        "FAILED": [
+          {
+            "name": "cancel_cod_authorization",
+            "taskReferenceName": "cancel_cod_after_inventory_commit",
+            "type": "SIMPLE",
+            "optional": true,
+            "inputParameters": {
+              "reverses": "authorize_cod_payment",
+              "payment_id": "${workflow.input.payment_id}",
+              "order_id": "${workflow.input.order_id}",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "release_inventory_reservation",
+            "taskReferenceName": "release_inventory_after_inventory_commit",
+            "type": "SIMPLE",
+            "optional": true,
+            "inputParameters": {
+              "reverses": "reserve_inventory",
+              "reservation_id": "${workflow.input.reservation_id}",
+              "order_id": "${workflow.input.order_id}",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "fail_order",
+            "taskReferenceName": "fail_order_after_inventory_commit",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "reverses": "confirm_order",
+              "order_id": "${workflow.input.order_id}",
+              "reason": "inventory commit failed",
+              "correlation_id": "${workflow.input.correlation_id}"
+            }
+          },
+          {
+            "name": "publish_checkout_failed",
+            "taskReferenceName": "publish_checkout_failed_after_inventory_commit",
+            "type": "SIMPLE",
+            "inputParameters": {
+              "event_type": "order.checkout.failed",
+              "order_id": "${workflow.input.order_id}",
+              "user_id": "${workflow.input.user_id}",
+              "reason": "inventory commit failed",
+              "correlation_id": "${workflow.input.correlation_id}",
+              "idempotency_key": "checkout-failed-${workflow.input.order_id}"
+            }
+          },
+          {
+            "name": "terminate_checkout_failed",
+            "taskReferenceName": "terminate_after_inventory_commit",
+            "type": "TERMINATE",
+            "inputParameters": {
+              "terminationStatus": "FAILED",
+              "workflowOutput": {
+                "reason": "inventory commit failed"
+              }
+            }
+          }
+        ]
+      },
+      "defaultCase": []
+    },
+    {
+      "name": "publish_order_confirmed",
+      "taskReferenceName": "publish_order_confirmed",
+      "type": "SIMPLE",
+      "inputParameters": {
+        "local_transaction": "workflow-service publishes terminal order confirmation event",
+        "compensation": "none",
+        "event_type": "order.confirmed",
+        "order_id": "${workflow.input.order_id}",
+        "user_id": "${workflow.input.user_id}",
+        "total": "${workflow.input.total}",
+        "lines": "${workflow.input.lines}",
+        "correlation_id": "${workflow.input.correlation_id}",
+        "idempotency_key": "${workflow.input.idempotency_key}"
+      }
+    },
+    {
+      "name": "post_confirmation_side_effects",
+      "taskReferenceName": "post_confirmation_side_effects",
+      "type": "FORK_JOIN",
+      "forkTasks": [
+        [
+          {
+            "name": "generate_invoice",
+            "taskReferenceName": "generate_invoice",
+            "type": "SIMPLE",
+            "optional": true,
+            "inputParameters": {
+              "side_effect": "true",
+              "compensation": "none",
+              "order_id": "${workflow.input.order_id}",
+              "user_id": "${workflow.input.user_id}",
+              "total": "${workflow.input.total}",
+              "correlation_id": "${workflow.input.correlation_id}",
+              "idempotency_key": "invoice-${workflow.input.order_id}"
+            }
+          }
+        ],
+        [
+          {
+            "name": "send_order_notification",
+            "taskReferenceName": "send_order_notification",
+            "type": "SIMPLE",
+            "optional": true,
+            "inputParameters": {
+              "side_effect": "true",
+              "compensation": "none",
+              "user_id": "${workflow.input.user_id}",
+              "event_type": "order.confirmed",
+              "message": "Order ${workflow.input.order_id} confirmed",
+              "order_id": "${workflow.input.order_id}",
+              "correlation_id": "${workflow.input.correlation_id}",
+              "idempotency_key": "notification-${workflow.input.order_id}"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "join_post_confirmation_side_effects",
+      "taskReferenceName": "join_post_confirmation_side_effects",
+      "type": "JOIN",
+      "joinOn": [
+        "generate_invoice",
+        "send_order_notification"
+      ]
+    }
+  ]
+}

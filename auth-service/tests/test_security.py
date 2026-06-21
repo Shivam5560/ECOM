@@ -11,6 +11,7 @@ class AuthSecurityTests(unittest.TestCase):
         hashed = hasher.hash_password("secret-password")
 
         self.assertNotEqual(hashed, "secret-password")
+        self.assertTrue(hashed.startswith(("$2a$", "$2b$", "$2y$")))
         self.assertTrue(hasher.verify_password("secret-password", hashed))
         self.assertFalse(hasher.verify_password("wrong-password", hashed))
 

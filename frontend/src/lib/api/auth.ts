@@ -1,6 +1,6 @@
 import { postJson, type ApiOptions } from "./client";
 
-const defaultAuthUrl = import.meta.env.VITE_AUTH_API_URL ?? "";
+const defaultApiUrl = import.meta.env.VITE_API_BASE_URL ?? "";
 
 export type AuthCredentials = {
   email: string;
@@ -29,9 +29,9 @@ export async function login(
   options: ApiOptions = {},
 ): Promise<AuthSession> {
   const response = await postJson<TokenResponse, AuthCredentials>(
-    "/auth/login",
+    "/api/v1/auth/login",
     credentials,
-    { baseUrl: options.baseUrl ?? defaultAuthUrl, fetcher: options.fetcher },
+    { baseUrl: options.baseUrl ?? defaultApiUrl, fetcher: options.fetcher },
   );
   return normalizeToken(response);
 }
@@ -41,9 +41,9 @@ export async function register(
   options: ApiOptions = {},
 ): Promise<AuthSession> {
   const response = await postJson<TokenResponse, AuthCredentials>(
-    "/auth/register",
+    "/api/v1/auth/register",
     credentials,
-    { baseUrl: options.baseUrl ?? defaultAuthUrl, fetcher: options.fetcher },
+    { baseUrl: options.baseUrl ?? defaultApiUrl, fetcher: options.fetcher },
   );
   return normalizeToken(response);
 }

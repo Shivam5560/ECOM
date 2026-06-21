@@ -1,0 +1,57 @@
+{
+  "name": "order_checkout_cod_compensation",
+  "description": "Saga compensation for failed COD checkout. Tasks run in reverse local-transaction order and must be idempotent.",
+  "version": 2,
+  "schemaVersion": 2,
+  "ownerEmail": "ops@ecom.local",
+  "tasks": [
+    {
+      "name": "cancel_cod_authorization",
+      "taskReferenceName": "cancel_cod_authorization",
+      "type": "SIMPLE",
+      "optional": true,
+      "inputParameters": {
+        "reverses": "authorize_cod_payment",
+        "payment_id": "${workflow.input.payment_id}",
+        "order_id": "${workflow.input.order_id}",
+        "correlation_id": "${workflow.input.correlation_id}"
+      }
+    },
+    {
+      "name": "release_inventory_reservation",
+      "taskReferenceName": "release_inventory_reservation",
+      "type": "SIMPLE",
+      "optional": true,
+      "inputParameters": {
+        "reverses": "reserve_inventory",
+        "reservation_id": "${workflow.input.reservation_id}",
+        "order_id": "${workflow.input.order_id}",
+        "correlation_id": "${workflow.input.correlation_id}"
+      }
+    },
+    {
+      "name": "fail_order",
+      "taskReferenceName": "fail_order",
+      "type": "SIMPLE",
+      "inputParameters": {
+        "reverses": "confirm_order",
+        "order_id": "${workflow.input.order_id}",
+        "reason": "${workflow.input.failureReason}",
+        "correlation_id": "${workflow.input.correlation_id}"
+      }
+    },
+    {
+      "name": "publish_checkout_failed",
+      "taskReferenceName": "publish_checkout_failed",
+      "type": "SIMPLE",
+      "inputParameters": {
+        "reverses": "publish_order_confirmed",
+        "event_type": "order.checkout.failed",
+        "order_id": "${workflow.input.order_id}",
+        "user_id": "${workflow.input.user_id}",
+        "correlation_id": "${workflow.input.correlation_id}",
+        "idempotency_key": "checkout-failed-${workflow.input.order_id}"
+      }
+    }
+  ]
+}

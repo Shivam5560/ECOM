@@ -1,4 +1,4 @@
-export type Category = "Audio" | "Carry" | "Desk" | "Home" | "Wear";
+export type Category = string;
 
 export type Product = {
   id: string;
@@ -9,7 +9,7 @@ export type Product = {
   accent: string;
   image: string;
   rating: number;
-  inventory: string;
+  stock: number;
 };
 
 export type CartItem = {
